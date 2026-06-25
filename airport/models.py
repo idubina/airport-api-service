@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.db.models import Q, F
 
@@ -150,3 +151,62 @@ class Flight(models.Model):
 
     def __str__(self):
         return f"{self.route} [time: {self.departure_time}]"
+
+
+class Order(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="orders",
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return str(self.created_at)
+
+
+class TicketClass(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    price_multiplier = models.DecimalField(max_digits=7, decimal_places=2)
+
+    class Meta:
+        verbose_name_plural = "ticket_classes"
+
+    def __str__(self):
+        return self.name
+
+
+class Ticket(models.Model):
+    row = models.PositiveIntegerField()
+    seat = models.PositiveIntegerField()
+    flight = models.ForeignKey(
+        Flight,
+        related_name="tickets",
+        on_delete=models.CASCADE
+    )
+    order = models.ForeignKey(
+        Order,
+        related_name="tickets",
+        on_delete=models.CASCADE
+    )
+    ticket_class = models.ForeignKey(
+        TicketClass,
+        related_name="tickets",
+        on_delete=models.PROTECT
+    )
+    price = models.DecimalField(max_digits=7, decimal_places=2)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["flight", "row", "seat"],
+                name="unique_ticket_seat"
+            )
+        ]
+        ordering = ["seat"]
+
+    def __str__(self):
+        return f"{self.flight} - seat: {self.seat} [{self.ticket_class}]"
