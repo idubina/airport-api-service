@@ -72,7 +72,7 @@ class Route(models.Model):
                 name="unique_route_source_destination"
             ),
             models.CheckConstraint(
-                check=~Q(source=F("destination")),
+                condition=~Q(source=F("destination")),
                 name="source_and_destination_are_different"
             )
         ]
@@ -83,3 +83,70 @@ class Route(models.Model):
             f" - {self.destination.closest_big_city}"
             f" ({self.distance} km)"
         )
+
+
+class Crew(models.Model):
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+
+class AirplaneType(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Airplane(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    rows = models.PositiveIntegerField()
+    seats_in_rows = models.PositiveIntegerField()
+    airplane_type = models.ForeignKey(
+        AirplaneType,
+        related_name="airplanes",
+        on_delete=models.CASCADE
+    )
+
+    @property
+    def capacity(self):
+        return self.rows * self.seats_in_rows
+
+    def __str__(self):
+        return f"{self.name} ({self.airplane_type})"
+
+
+class Flight(models.Model):
+    route = models.ForeignKey(
+        Route,
+        related_name="flights",
+        on_delete=models.CASCADE
+    )
+    airplane = models.ForeignKey(
+        Airplane,
+        related_name="flights",
+        on_delete=models.CASCADE
+    )
+    departure_time = models.DateTimeField()
+    arrival_time = models.DateTimeField()
+    base_price = models.DecimalField(
+        max_digits=7,
+        decimal_places=2
+    )
+    crew = models.ManyToManyField(
+        Crew,
+        related_name="flights",
+    )
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(departure_time__lt=F("arrival_time")),
+                name="departure_time_before_arrival_time"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.route} [time: {self.departure_time}]"
