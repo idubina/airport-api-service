@@ -30,6 +30,8 @@ from airport.serializers import (
     AirplaneListSerializer,
     AirplaneRetrieveSerializer,
     FlightSerializer,
+    FlightListSerializer,
+    FlightRetrieveSerializer,
     OrderSerializer,
     TicketClassSerializer,
     TicketSerializer
@@ -221,6 +223,29 @@ class AirplaneViewSet(viewsets.ModelViewSet):
 class FlightViewSet(viewsets.ModelViewSet):
     serializer_class = FlightSerializer
     queryset = Flight.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return FlightListSerializer
+
+        if self.action == "retrieve":
+            return FlightRetrieveSerializer
+
+        return self.serializer_class
+
+    def get_queryset(self):
+        queryset = self.queryset
+
+        if self.action in ("list", "retrieve"):
+            queryset = (
+                queryset.select_related(
+                    "route__source__closest_big_city__country",
+                    "route__destination__closest_big_city__country",
+                    "airplane__airplane_type"
+                )
+                .prefetch_related("crew")
+            )
+        return queryset
 
 
 class OrderViewSet(viewsets.ModelViewSet):

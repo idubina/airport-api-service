@@ -138,7 +138,24 @@ class FlightSerializer(serializers.ModelSerializer):
             "departure_time",
             "arrival_time",
             "base_price",
+            "crew",
         )
+
+
+class FlightListSerializer(FlightSerializer):
+    airplane = serializers.StringRelatedField(read_only=True)
+    route = serializers.StringRelatedField(read_only=True)
+    crew = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field="full_name"
+    )
+
+
+class FlightRetrieveSerializer(FlightSerializer):
+    airplane = AirplaneSerializer(read_only=True)
+    route = RouteListSerializer(read_only=True)
+    crew = CrewSerializer(read_only=True, many=True)
 
 
 class OrderSerializer(serializers.ModelSerializer):
