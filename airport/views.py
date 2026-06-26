@@ -15,6 +15,7 @@ from airport.models import (
 )
 from airport.serializers import (
     CountrySerializer,
+    CityListRetrieveSerializer,
     CitySerializer,
     AirportSerializer,
     RouteSerializer,
@@ -36,6 +37,20 @@ class CountryViewSet(viewsets.ModelViewSet):
 class CityViewSet(viewsets.ModelViewSet):
     serializer_class = CitySerializer
     queryset = City.objects.all()
+
+    def get_serializer_class(self):
+        if self.action in ("list", "retrieve",):
+            return CityListRetrieveSerializer
+        return CitySerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        country = self.request.query_params.get("country")
+        if country:
+            queryset = queryset.filter(country__name__iexact=country)
+        if self.action == "list":
+            queryset = queryset.select_related("country")
+        return queryset
 
 
 class AirportViewSet(viewsets.ModelViewSet):

@@ -33,6 +33,10 @@ class CitySerializer(serializers.ModelSerializer):
         )
 
 
+class CityListRetrieveSerializer(CitySerializer):
+    country = serializers.CharField(source="country.name", read_only=True)
+
+
 class AirportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airport
