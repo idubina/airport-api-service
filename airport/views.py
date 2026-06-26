@@ -18,6 +18,8 @@ from airport.serializers import (
     CityListRetrieveSerializer,
     CitySerializer,
     AirportSerializer,
+    AirportListSerializer,
+    AirportRetrieveSerializer,
     RouteSerializer,
     CrewSerializer,
     AirplaneTypeSerializer,
@@ -54,8 +56,34 @@ class CityViewSet(viewsets.ModelViewSet):
 
 
 class AirportViewSet(viewsets.ModelViewSet):
-    serializer_class = AirportSerializer
     queryset = Airport.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return AirportListSerializer
+        if self.action == "retrieve":
+            return AirportRetrieveSerializer
+        return AirportSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+
+        name = self.request.query_params.get("name")
+        city = self.request.query_params.get("city")
+
+        if name:
+            queryset = queryset.filter(name__icontains=name)
+
+        if city:
+            queryset = queryset.filter(closest_big_city__name__iexact=city)
+
+        if self.action == "list":
+            queryset = queryset.select_related("closest_big_city")
+
+        if self.action == "retrieve":
+            queryset = queryset.select_related("closest_big_city__country")
+
+        return queryset
 
 
 class RouteViewSet(viewsets.ModelViewSet):
