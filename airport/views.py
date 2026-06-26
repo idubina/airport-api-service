@@ -21,6 +21,8 @@ from airport.serializers import (
     AirportListSerializer,
     AirportRetrieveSerializer,
     RouteSerializer,
+    RouteListSerializer,
+    RouteRetrieveSerializer,
     CrewSerializer,
     AirplaneTypeSerializer,
     AirplaneSerializer,
@@ -87,8 +89,64 @@ class AirportViewSet(viewsets.ModelViewSet):
 
 
 class RouteViewSet(viewsets.ModelViewSet):
-    serializer_class = RouteSerializer
     queryset = Route.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return RouteListSerializer
+        if self.action == "retrieve":
+            return RouteRetrieveSerializer
+        return RouteSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+
+        source_name = self.request.query_params.get("source_name")
+        source_city = self.request.query_params.get("source_city")
+        source_country = self.request.query_params.get("source_country")
+        destination_name = self.request.query_params.get("destination_name")
+        destination_city = self.request.query_params.get("destination_city")
+        destination_country = self.request.query_params.get(
+            "destination_country"
+        )
+
+        if source_name:
+            queryset = queryset.filter(
+                source__name__icontains=source_name
+            )
+        if source_city:
+            lookup = "source__closest_big_city__name__icontains"
+            queryset = queryset.filter(
+                **{lookup: source_city}
+            )
+        if source_country:
+            lookup = "source__closest_big_city__country__name__icontains"
+            queryset = queryset.filter(
+                **{lookup: source_country}
+            )
+
+        if destination_name:
+            queryset = queryset.filter(
+                destination__name__icontains=destination_name
+            )
+        if destination_city:
+            lookup = "destination__closest_big_city__name__icontains"
+            queryset = queryset.filter(
+                **{lookup: destination_city}
+            )
+        if destination_country:
+            lookup = "destination__closest_big_city__country__name__icontains"
+            queryset = queryset.filter(
+                **{lookup: destination_country}
+            )
+
+        if self.action in ("list", "retrieve"):
+            queryset = queryset.select_related(
+                "destination__closest_big_city__country",
+                "source__closest_big_city__country"
+            )
+
+        return queryset
 
 
 class CrewViewSet(viewsets.ModelViewSet):
