@@ -159,6 +159,18 @@ class CrewViewSet(viewsets.ModelViewSet):
             return CrewListSerializer
         return self.serializer_class
 
+    def get_queryset(self):
+        queryset = self.queryset
+        first_name = self.request.query_params.get("first_name")
+        if first_name:
+            queryset = queryset.filter(first_name__icontains=first_name)
+
+        last_name = self.request.query_params.get("last_name")
+        if last_name:
+            queryset = queryset.filter(last_name__icontains=last_name)
+
+        return queryset
+
 
 class AirplaneTypeViewSet(viewsets.ModelViewSet):
     serializer_class = AirplaneTypeSerializer
