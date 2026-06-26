@@ -114,10 +114,18 @@ class AirplaneSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "rows",
+            "capacity",
             "seats_in_rows",
             "airplane_type",
-            "capacity",
         )
+
+
+class AirplaneListSerializer(AirplaneSerializer):
+    airplane_type = serializers.StringRelatedField(read_only=True)
+
+
+class AirplaneRetrieveSerializer(AirplaneSerializer):
+    airplane_type = AirplaneTypeSerializer(read_only=True)
 
 
 class FlightSerializer(serializers.ModelSerializer):
