@@ -323,6 +323,10 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
 
+    @staticmethod
+    def _params_to_ints(qs):
+        return [int(str_id) for str_id in qs.split(",")]
+
     def get_serializer_class(self):
 
         if self.action == "list":
@@ -335,6 +339,19 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset
+
+        if not self.request.user.is_staff:
+            queryset = queryset.filter(user=self.request.user)
+        else:
+            users = self.request.query_params.get("users")
+            if users:
+                user_ids = self._params_to_ints(users)
+                queryset = queryset.filter(user__id__in=user_ids)
+
+        flight = self.request.query_params.get("flight")
+
+        if flight:
+            queryset = queryset.filter(tickets__flight__id=flight)
 
         if self.action in ("list", "retrieve"):
             tickets_queryset = Ticket.objects.select_related(
@@ -349,7 +366,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             queryset = queryset.prefetch_related(
                 Prefetch("tickets", queryset=tickets_queryset)
             )
-        return queryset
+        return queryset.distinct()
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
