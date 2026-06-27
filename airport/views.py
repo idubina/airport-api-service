@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from rest_framework import viewsets
 
 from airport.models import (
@@ -233,8 +235,56 @@ class FlightViewSet(viewsets.ModelViewSet):
 
         return self.serializer_class
 
+    @staticmethod
+    def _params_to_ints(qs):
+        return [int(str_id) for str_id in qs.split(",")]
+
     def get_queryset(self):
         queryset = self.queryset
+
+        min_base_price = self.request.query_params.get("min_base_price")
+        max_base_price = self.request.query_params.get("max_base_price")
+
+        source_city = self.request.query_params.get("source_city")
+        destination_city = self.request.query_params.get("destination_city")
+
+        crew = self.request.query_params.get("crew")
+
+        departure_date = self.request.query_params.get("departure_date")
+        arrival_date = self.request.query_params.get("arrival_date")
+
+        if min_base_price:
+            queryset = queryset.filter(base_price__gte=min_base_price)
+
+        if max_base_price:
+            queryset = queryset.filter(base_price__lte=max_base_price)
+
+        if source_city:
+            lookup = "route__source__closest_big_city__name__icontains"
+            queryset = queryset.filter(
+                **{lookup: source_city}
+            )
+
+        if destination_city:
+            lookup = "route__destination__closest_big_city__name__icontains"
+            queryset = queryset.filter(
+                **{lookup: destination_city}
+            )
+
+        if crew:
+            crew_ids = self._params_to_ints(crew)
+            queryset = queryset.filter(crew__id__in=crew_ids)
+
+        if departure_date:
+            departure_date = datetime.strptime(
+                departure_date,
+                "%Y-%m-%d"
+            ).date()
+            queryset = queryset.filter(departure_time__date=departure_date)
+
+        if arrival_date:
+            arrival_date = datetime.strptime(arrival_date, "%Y-%m-%d").date()
+            queryset = queryset.filter(arrival_time__date=arrival_date)
 
         if self.action in ("list", "retrieve"):
             queryset = (
@@ -245,7 +295,8 @@ class FlightViewSet(viewsets.ModelViewSet):
                 )
                 .prefetch_related("crew")
             )
-        return queryset
+
+        return queryset.distinct()
 
 
 class OrderViewSet(viewsets.ModelViewSet):
