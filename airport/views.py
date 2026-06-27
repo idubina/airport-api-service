@@ -296,6 +296,15 @@ class FlightViewSet(viewsets.ModelViewSet):
                 .prefetch_related("crew")
             )
 
+        route = self.request.query_params.get("route")
+        airplane = self.request.query_params.get("airplane")
+
+        if route:
+            queryset = queryset.filter(route_id=route)
+
+        if airplane:
+            queryset = queryset.filter(airplane_id=airplane)
+
         return queryset.distinct()
 
 
