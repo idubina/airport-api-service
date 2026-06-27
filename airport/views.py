@@ -147,6 +147,15 @@ class RouteViewSet(viewsets.ModelViewSet):
                 **{lookup: destination_country}
             )
 
+        destination = self.request.query_params.get("destination")
+        source = self.request.query_params.get("source")
+
+        if destination:
+            queryset = queryset.filter(destination_id=destination)
+
+        if source:
+            queryset = queryset.filter(source_id=source)
+
         if self.action in ("list", "retrieve"):
             queryset = queryset.select_related(
                 "destination__closest_big_city__country",
