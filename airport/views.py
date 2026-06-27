@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.db.models import Prefetch
 from rest_framework import viewsets
 
 from airport.models import (
@@ -13,7 +14,7 @@ from airport.models import (
     Flight,
     Order,
     TicketClass,
-    Ticket
+    Ticket,
 )
 from airport.serializers import (
     CountrySerializer,
@@ -35,8 +36,9 @@ from airport.serializers import (
     FlightListSerializer,
     FlightRetrieveSerializer,
     OrderSerializer,
+    OrderListSerializer,
+    OrderRetrieveSerializer,
     TicketClassSerializer,
-    TicketSerializer
 )
 
 
@@ -321,12 +323,49 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
 
+    def get_serializer_class(self):
+
+        if self.action == "list":
+            return OrderListSerializer
+
+        if self.action == "retrieve":
+            return OrderRetrieveSerializer
+
+        return self.serializer_class
+
+    def get_queryset(self):
+        queryset = self.queryset
+
+        if self.action in ("list", "retrieve"):
+            tickets_queryset = Ticket.objects.select_related(
+                "ticket_class",
+                "flight__route__source__closest_big_city__country",
+                "flight__route__destination__closest_big_city__country",
+                "flight__airplane__airplane_type",
+            ).prefetch_related(
+                "flight__crew",
+            )
+
+            queryset = queryset.prefetch_related(
+                Prefetch("tickets", queryset=tickets_queryset)
+            )
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
 
 class TicketClassViewSet(viewsets.ModelViewSet):
     serializer_class = TicketClassSerializer
     queryset = TicketClass.objects.all()
 
+    def get_queryset(self):
 
-class TicketViewSet(viewsets.ModelViewSet):
-    serializer_class = TicketSerializer
-    queryset = Ticket.objects.all()
+        queryset = self.queryset
+
+        ticket_class = self.request.query_params.get("ticket_class")
+
+        if ticket_class:
+            queryset = queryset.filter(name__icontains=ticket_class)
+
+        return queryset

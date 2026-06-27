@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 from airport.models import (
     Country,
@@ -158,16 +159,6 @@ class FlightRetrieveSerializer(FlightSerializer):
     crew = CrewSerializer(read_only=True, many=True)
 
 
-class OrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Order
-        fields = (
-            "id",
-            "created_at",
-            "user",
-        )
-
-
 class TicketClassSerializer(serializers.ModelSerializer):
     class Meta:
         model = TicketClass
@@ -179,6 +170,7 @@ class TicketClassSerializer(serializers.ModelSerializer):
 
 
 class TicketSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Ticket
         fields = (
@@ -186,7 +178,54 @@ class TicketSerializer(serializers.ModelSerializer):
             "row",
             "seat",
             "flight",
-            "order",
             "ticket_class",
             "price"
         )
+        read_only_fields = ("id", "price",)
+
+
+class TicketListSerializer(TicketSerializer):
+    ticket_class = serializers.StringRelatedField(read_only=True)
+    flight = serializers.StringRelatedField(read_only=True)
+
+
+class TicketRetrieveSerializer(TicketSerializer):
+    ticket_class = TicketClassSerializer(read_only=True)
+    flight = FlightListSerializer(
+        read_only=True,
+    )
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    tickets = TicketSerializer(many=True, allow_empty=False)
+
+    class Meta:
+        model = Order
+        fields = (
+            "id",
+            "created_at",
+            "tickets",
+        )
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            tickets_data = validated_data.pop("tickets")
+            order = super().create(validated_data)
+
+            for ticket_data in tickets_data:
+                flight = ticket_data["flight"]
+                ticket_class = ticket_data["ticket_class"]
+                ticket_data["price"] = (
+                    flight.base_price * ticket_class.price_multiplier
+                )
+                Ticket.objects.create(order=order, **ticket_data)
+
+            return order
+
+
+class OrderListSerializer(OrderSerializer):
+    tickets = TicketListSerializer(read_only=True, many=True)
+
+
+class OrderRetrieveSerializer(OrderSerializer):
+    tickets = TicketRetrieveSerializer(read_only=True, many=True)
