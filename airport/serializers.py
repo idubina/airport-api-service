@@ -183,6 +183,13 @@ class TicketSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "price",)
 
+    def validate(self, attrs):
+        Ticket.validate_seat(
+            attrs["seat"],
+            attrs["flight"].airplane.capacity,
+            serializers.ValidationError
+        )
+
 
 class TicketListSerializer(TicketSerializer):
     ticket_class = serializers.StringRelatedField(read_only=True)
