@@ -137,7 +137,7 @@ class AirplaneType(models.Model):
 class Airplane(models.Model):
     name = models.CharField(max_length=255, unique=True)
     rows = models.PositiveIntegerField()
-    seats_in_rows = models.PositiveIntegerField()
+    seats_in_row = models.PositiveIntegerField()
     airplane_type = models.ForeignKey(
         AirplaneType,
         related_name="airplanes",
@@ -151,7 +151,7 @@ class Airplane(models.Model):
 
     @property
     def capacity(self):
-        return self.rows * self.seats_in_rows
+        return self.rows * self.seats_in_row
 
     def __str__(self):
         return f"{self.name} ({self.airplane_type})"

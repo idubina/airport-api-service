@@ -501,7 +501,7 @@ class FlightViewSet(viewsets.ModelViewSet):
             if self.action == "list":
                 queryset = queryset.annotate(
                     tickets_available=(
-                        F("airplane__seats_in_rows")
+                        F("airplane__seats_in_row")
                         * F("airplane__rows")
                         - Count("tickets", distinct=True)
                     )
