@@ -151,7 +151,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
+        "airport.permissions.IsAdminOrAuthenticatedReadOnly",
     ],
     "DEFAULT_PAGINATION_CLASS": (
         "rest_framework.pagination.LimitOffsetPagination"
