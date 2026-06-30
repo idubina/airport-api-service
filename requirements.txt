@@ -10,6 +10,7 @@ flake8-quotes==3.4.0
 flake8-variables-names==0.0.6
 mccabe==0.7.0
 pep8-naming==0.15.1
+pillow==12.2.0
 pycodestyle==2.14.0
 pyflakes==3.4.0
 PyJWT==2.13.0

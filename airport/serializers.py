@@ -45,6 +45,7 @@ class AirportSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "closest_big_city",
+            "image"
         )
 
 
@@ -118,6 +119,7 @@ class AirplaneSerializer(serializers.ModelSerializer):
             "capacity",
             "seats_in_rows",
             "airplane_type",
+            "image"
         )
 
 
@@ -236,3 +238,22 @@ class OrderListSerializer(OrderSerializer):
 
 class OrderRetrieveSerializer(OrderSerializer):
     tickets = TicketRetrieveSerializer(read_only=True, many=True)
+
+
+class AirplaneImageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Airplane
+        fields = (
+            "id",
+            "image",
+        )
+
+
+class AirportImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Airport
+        fields = (
+            "id",
+            "image",
+        )

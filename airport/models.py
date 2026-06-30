@@ -1,6 +1,30 @@
+import pathlib
+import uuid
+
 from django.conf import settings
 from django.db import models
 from django.db.models import Q, F
+from django.utils.text import slugify
+
+
+def airport_image_path(instance, filename):
+    filename = (
+        (
+            f"{slugify(instance.name)}"
+            f"-{uuid.uuid4()}"
+        ) + pathlib.Path(filename).suffix
+    )
+    return pathlib.Path("upload/airports") / pathlib.Path(filename)
+
+
+def airplane_image_path(instance, filename):
+    filename = (
+        (
+            f"{slugify(str(instance))}"
+            f"-{uuid.uuid4()}"
+        ) + pathlib.Path(filename).suffix
+    )
+    return pathlib.Path("upload/airplanes") / pathlib.Path(filename)
 
 
 class Country(models.Model):
@@ -40,6 +64,11 @@ class Airport(models.Model):
         City,
         related_name="airports",
         on_delete=models.CASCADE
+    )
+    image = models.ImageField(
+        null=True,
+        blank=True,
+        upload_to=airport_image_path
     )
 
     def __str__(self):
@@ -113,6 +142,11 @@ class Airplane(models.Model):
         AirplaneType,
         related_name="airplanes",
         on_delete=models.CASCADE
+    )
+    image = models.ImageField(
+        null=True,
+        blank=True,
+        upload_to=airplane_image_path
     )
 
     @property

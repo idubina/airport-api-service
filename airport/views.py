@@ -1,7 +1,10 @@
 from datetime import datetime
 
 from django.db.models import Prefetch
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAdminUser
+from rest_framework.response import Response
 
 from airport.models import (
     Country,
@@ -23,6 +26,7 @@ from airport.serializers import (
     AirportSerializer,
     AirportListSerializer,
     AirportRetrieveSerializer,
+    AirportImageSerializer,
     RouteSerializer,
     RouteListSerializer,
     RouteRetrieveSerializer,
@@ -32,6 +36,7 @@ from airport.serializers import (
     AirplaneSerializer,
     AirplaneListSerializer,
     AirplaneRetrieveSerializer,
+    AirplaneImageSerializer,
     FlightSerializer,
     FlightListSerializer,
     FlightRetrieveSerializer,
@@ -74,6 +79,8 @@ class AirportViewSet(viewsets.ModelViewSet):
             return AirportListSerializer
         if self.action == "retrieve":
             return AirportRetrieveSerializer
+        if self.action == "upload_airport_image":
+            return AirportImageSerializer
         return AirportSerializer
 
     def get_queryset(self):
@@ -95,6 +102,22 @@ class AirportViewSet(viewsets.ModelViewSet):
             queryset = queryset.select_related("closest_big_city__country")
 
         return queryset
+
+    @action(
+        methods=["post"],
+        detail=True,
+        url_path="upload-image",
+        permission_classes=[IsAdminUser, ]
+    )
+    def upload_airport_image(self, request, pk=None):
+
+        airport = self.get_object()
+        serializer = self.get_serializer(airport, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RouteViewSet(viewsets.ModelViewSet):
@@ -211,6 +234,8 @@ class AirplaneViewSet(viewsets.ModelViewSet):
             return AirplaneListSerializer
         if self.action == "retrieve":
             return AirplaneRetrieveSerializer
+        if self.action == "upload_airplane_image":
+            return AirplaneImageSerializer
         return self.serializer_class
 
     def get_queryset(self):
@@ -231,6 +256,22 @@ class AirplaneViewSet(viewsets.ModelViewSet):
             queryset = queryset.select_related("airplane_type")
 
         return queryset
+
+    @action(
+        methods=["post"],
+        detail=True,
+        url_path="upload-image",
+        permission_classes=[IsAdminUser,]
+    )
+    def upload_airplane_image(self, request, pk=None):
+
+        airplane = self.get_object()
+        serializer = self.get_serializer(airplane, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FlightViewSet(viewsets.ModelViewSet):
