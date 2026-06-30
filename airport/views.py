@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Count, F
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
@@ -345,8 +345,16 @@ class FlightViewSet(viewsets.ModelViewSet):
                     "route__destination__closest_big_city__country",
                     "airplane__airplane_type"
                 )
-                .prefetch_related("crew")
+                .prefetch_related("crew", "tickets")
             )
+            if self.action == "list":
+                queryset = queryset.annotate(
+                    tickets_available=(
+                        F("airplane__seats_in_rows")
+                        * F("airplane__rows")
+                        - Count("tickets", distinct=True)
+                    )
+                )
 
         route = self.request.query_params.get("route")
         airplane = self.request.query_params.get("airplane")
