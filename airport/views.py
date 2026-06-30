@@ -6,6 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+
 from airport.models import (
     Country,
     City,
@@ -70,6 +72,19 @@ class CityViewSet(viewsets.ModelViewSet):
             queryset = queryset.select_related("country")
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="country",
+                description="Filter by country name",
+                type=str,
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of cities."""
+        return super().list(request, *args, **kwargs)
+
 
 class AirportViewSet(viewsets.ModelViewSet):
     queryset = Airport.objects.all()
@@ -102,6 +117,24 @@ class AirportViewSet(viewsets.ModelViewSet):
             queryset = queryset.select_related("closest_big_city__country")
 
         return queryset
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="name",
+                description="Filter by airport name",
+                type=str,
+            ),
+            OpenApiParameter(
+                name="city",
+                description="Filter by city name",
+                type=str,
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of airports."""
+        return super().list(request, *args, **kwargs)
 
     @action(
         methods=["post"],
@@ -189,6 +222,54 @@ class RouteViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="source",
+                description="Filter by source id",
+                type=int,
+            ),
+            OpenApiParameter(
+                name="source_name",
+                description="Filter by source airport name",
+                type=str,
+            ),
+            OpenApiParameter(
+                name="source_city",
+                description="Filter by source city",
+                type=str,
+            ),
+            OpenApiParameter(
+                name="source_country",
+                description="Filter by source country",
+                type=str,
+            ),
+            OpenApiParameter(
+                name="destination",
+                description="Filter by destination id",
+                type=int,
+            ),
+            OpenApiParameter(
+                name="destination_name",
+                description="Filter by destination airport name",
+                type=str,
+            ),
+            OpenApiParameter(
+                name="destination_city",
+                description="Filter by destination city",
+                type=str,
+            ),
+            OpenApiParameter(
+                name="destination_country",
+                description="Filter by destination country",
+                type=str,
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of routes."""
+        return super().list(request, *args, **kwargs)
+
 
 class CrewViewSet(viewsets.ModelViewSet):
     serializer_class = CrewSerializer
@@ -211,6 +292,24 @@ class CrewViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="first_name",
+                description="Filter by first name",
+                type=str,
+            ),
+            OpenApiParameter(
+                name="last_name",
+                description="Filter by last name",
+                type=str,
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of crews."""
+        return super().list(request, *args, **kwargs)
+
 
 class AirplaneTypeViewSet(viewsets.ModelViewSet):
     serializer_class = AirplaneTypeSerializer
@@ -223,6 +322,19 @@ class AirplaneTypeViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(name__icontains=name)
 
         return queryset
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="name",
+                description="Filter by Airplane Type name",
+                type=str,
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of airplane types."""
+        return super().list(request, *args, **kwargs)
 
 
 class AirplaneViewSet(viewsets.ModelViewSet):
@@ -256,6 +368,24 @@ class AirplaneViewSet(viewsets.ModelViewSet):
             queryset = queryset.select_related("airplane_type")
 
         return queryset
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="name",
+                description="Filter by Airplane name",
+                type=str,
+            ),
+            OpenApiParameter(
+                name="airplane_type",
+                description="Filter by Airplane type",
+                type=str,
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of airplanes."""
+        return super().list(request, *args, **kwargs)
 
     @action(
         methods=["post"],
@@ -367,6 +497,68 @@ class FlightViewSet(viewsets.ModelViewSet):
 
         return queryset.distinct()
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="min_base_price",
+                description="Filter by flight min base price",
+                type=int,
+            ),
+            OpenApiParameter(
+                name="max_base_price",
+                description="Filter by flight max base price",
+                type=int,
+            ),
+            OpenApiParameter(
+                name="source_city",
+                description="Filter by source airport city",
+                type=str,
+            ),
+            OpenApiParameter(
+                name="destination_city",
+                description="Filter by destination airport city",
+                type=str,
+            ),
+            OpenApiParameter(
+                name="crew",
+                description="Filter by crew ids (ex. ?crew=2,3)",
+                type={
+                    "type": "array",
+                    "items": {"type": "integer"}
+                },
+            ),
+            OpenApiParameter(
+                name="departure_date",
+                description=(
+                    "Filter by departure date"
+                    " in YYYY-MM-DD format"
+                ),
+                type=str,
+            ),
+            OpenApiParameter(
+                name="arrival_date",
+                description=(
+                    "Filter by arrival date"
+                    " in YYYY-MM-DD format"
+                ),
+                type=str,
+            ),
+            OpenApiParameter(
+                name="route",
+                description="Filter by route id",
+                type=int,
+            ),
+            OpenApiParameter(
+                name="airplane",
+                description="Filter by airplane id",
+                type=int,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of flights."""
+        return super().list(request, *args, **kwargs)
+
 
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
@@ -417,6 +609,27 @@ class OrderViewSet(viewsets.ModelViewSet):
             )
         return queryset.distinct()
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="flight",
+                description="Filter by ticket flight id",
+                type=int,
+            ),
+            OpenApiParameter(
+                name="users",
+                description="Filter by users",
+                type={
+                    "type": "array",
+                    "items": {"type": "integer"}
+                },
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of orders."""
+        return super().list(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
@@ -429,9 +642,22 @@ class TicketClassViewSet(viewsets.ModelViewSet):
 
         queryset = self.queryset
 
-        ticket_class = self.request.query_params.get("ticket_class")
+        name = self.request.query_params.get("name")
 
-        if ticket_class:
-            queryset = queryset.filter(name__icontains=ticket_class)
+        if name:
+            queryset = queryset.filter(name__icontains=name)
 
         return queryset
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="name",
+                description="Filter by ticket class name",
+                type=str,
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of ticket classes."""
+        return super().list(request, *args, **kwargs)
