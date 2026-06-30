@@ -1,4 +1,5 @@
-from datetime import datetime
+from django.utils.dateparse import parse_date
+from rest_framework.exceptions import ValidationError
 
 from django.db.models import Prefetch, Count, F
 from rest_framework import viewsets, status
@@ -6,7 +7,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiParameter,
+    OpenApiTypes,
+)
 
 from airport.models import (
     Country,
@@ -421,6 +426,19 @@ class FlightViewSet(viewsets.ModelViewSet):
     def _params_to_ints(qs):
         return [int(str_id) for str_id in qs.split(",")]
 
+    @staticmethod
+    def _validate_date(date_string, param_name):
+        parsed_date = parse_date(date_string)
+
+        if parsed_date is None:
+            raise ValidationError(
+                {
+                    param_name: "Date must be in YYYY-MM-DD format."
+                }
+            )
+
+        return parsed_date
+
     def get_queryset(self):
         queryset = self.queryset
 
@@ -458,14 +476,17 @@ class FlightViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(crew__id__in=crew_ids)
 
         if departure_date:
-            departure_date = datetime.strptime(
+            departure_date = self._validate_date(
                 departure_date,
-                "%Y-%m-%d"
-            ).date()
+                "departure_date",
+            )
             queryset = queryset.filter(departure_time__date=departure_date)
 
         if arrival_date:
-            arrival_date = datetime.strptime(arrival_date, "%Y-%m-%d").date()
+            arrival_date = self._validate_date(
+                arrival_date,
+                "arrival_date",
+            )
             queryset = queryset.filter(arrival_time__date=arrival_date)
 
         if self.action in ("list", "retrieve"):
@@ -533,7 +554,7 @@ class FlightViewSet(viewsets.ModelViewSet):
                     "Filter by departure date"
                     " in YYYY-MM-DD format"
                 ),
-                type=str,
+                type=OpenApiTypes.DATE,
             ),
             OpenApiParameter(
                 name="arrival_date",
@@ -541,7 +562,7 @@ class FlightViewSet(viewsets.ModelViewSet):
                     "Filter by arrival date"
                     " in YYYY-MM-DD format"
                 ),
-                type=str,
+                type=OpenApiTypes.DATE,
             ),
             OpenApiParameter(
                 name="route",
