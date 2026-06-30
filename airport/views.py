@@ -354,7 +354,7 @@ class FlightViewSet(viewsets.ModelViewSet):
                         * F("airplane__rows")
                         - Count("tickets", distinct=True)
                     )
-                )
+                ).order_by("id")
 
         route = self.request.query_params.get("route")
         airplane = self.request.query_params.get("airplane")
