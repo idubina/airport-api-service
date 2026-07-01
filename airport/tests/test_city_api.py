@@ -46,8 +46,8 @@ class AuthenticatedCityApiTest(TestCase):
 
         res = self.client.get(CITY_URL)
 
-        countries = City.objects.all()
-        serializer = CityListSerializer(countries, many=True)
+        cities = City.objects.all()
+        serializer = CityListSerializer(cities, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data["results"], serializer.data)
