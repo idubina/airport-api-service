@@ -34,7 +34,7 @@ class CitySerializer(serializers.ModelSerializer):
         )
 
 
-class CityListRetrieveSerializer(CitySerializer):
+class CityListSerializer(CitySerializer):
     country = serializers.CharField(source="country.name", read_only=True)
 
 
@@ -57,7 +57,7 @@ class AirportListSerializer(AirportSerializer):
 
 
 class AirportRetrieveSerializer(AirportSerializer):
-    closest_big_city = CityListRetrieveSerializer(read_only=True)
+    closest_big_city = CityListSerializer(read_only=True)
 
 
 class RouteSerializer(serializers.ModelSerializer):

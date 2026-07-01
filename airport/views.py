@@ -2,9 +2,9 @@ from django.utils.dateparse import parse_date
 from rest_framework.exceptions import ValidationError
 
 from django.db.models import Prefetch, Count, F
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
 from drf_spectacular.utils import (
@@ -28,7 +28,7 @@ from airport.models import (
 )
 from airport.serializers import (
     CountrySerializer,
-    CityListRetrieveSerializer,
+    CityListSerializer,
     CitySerializer,
     AirportSerializer,
     AirportListSerializer,
@@ -54,18 +54,26 @@ from airport.serializers import (
 )
 
 
-class CountryViewSet(viewsets.ModelViewSet):
+class CountryViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
     serializer_class = CountrySerializer
     queryset = Country.objects.all()
 
 
-class CityViewSet(viewsets.ModelViewSet):
+class CityViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
     serializer_class = CitySerializer
     queryset = City.objects.all()
 
     def get_serializer_class(self):
-        if self.action in ("list", "retrieve",):
-            return CityListRetrieveSerializer
+        if self.action == "list":
+            return CityListSerializer
         return CitySerializer
 
     def get_queryset(self):
@@ -91,7 +99,12 @@ class CityViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
 
-class AirportViewSet(viewsets.ModelViewSet):
+class AirportViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet
+):
     queryset = Airport.objects.all()
 
     def get_serializer_class(self):
@@ -158,7 +171,12 @@ class AirportViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class RouteViewSet(viewsets.ModelViewSet):
+class RouteViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet
+):
     queryset = Route.objects.all()
 
     def get_serializer_class(self):
@@ -276,7 +294,11 @@ class RouteViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
 
-class CrewViewSet(viewsets.ModelViewSet):
+class CrewViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
     serializer_class = CrewSerializer
     queryset = Crew.objects.all()
 
@@ -316,7 +338,11 @@ class CrewViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
 
-class AirplaneTypeViewSet(viewsets.ModelViewSet):
+class AirplaneTypeViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
     serializer_class = AirplaneTypeSerializer
     queryset = AirplaneType.objects.all()
 
@@ -342,7 +368,12 @@ class AirplaneTypeViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
 
-class AirplaneViewSet(viewsets.ModelViewSet):
+class AirplaneViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet
+):
     serializer_class = AirplaneSerializer
     queryset = Airplane.objects.all()
 
@@ -581,8 +612,14 @@ class FlightViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
 
-class OrderViewSet(viewsets.ModelViewSet):
+class OrderViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet
+):
     serializer_class = OrderSerializer
+    permission_classes = (IsAuthenticated,)
     queryset = Order.objects.all()
 
     @staticmethod
@@ -655,7 +692,11 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
-class TicketClassViewSet(viewsets.ModelViewSet):
+class TicketClassViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
     serializer_class = TicketClassSerializer
     queryset = TicketClass.objects.all()
 
