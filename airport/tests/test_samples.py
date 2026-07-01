@@ -1,6 +1,7 @@
 from airport.models import (
     Country,
     City,
+    Airport,
 )
 
 
@@ -23,3 +24,16 @@ def sample_city(**params):
     }
     defaults.update(params)
     return City.objects.create(**defaults)
+
+def sample_airport(**params):
+    city = params.pop("city", None)
+
+    if city is None:
+        city = sample_city()
+
+    defaults = {
+        "name": "TestAirport",
+        "closest_big_city": city
+    }
+    defaults.update(params)
+    return Airport.objects.create(**defaults)
