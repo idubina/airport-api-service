@@ -5,6 +5,7 @@ from airport.models import (
     City,
     Airport,
     Route,
+    Crew,
 )
 
 
@@ -120,6 +121,15 @@ def base_sample_route(**params):
         "destination": destination,
         "distance": 120
     }
-    defaults.update(**params)
+    defaults.update(params)
     return Route.objects.create(**defaults)
 
+def sample_crew(**params):
+
+    defaults = {
+        "first_name": "TestFirstName",
+        "last_name": "TestLastName",
+    }
+    defaults.update(params)
+
+    return Crew.objects.create(**defaults)
