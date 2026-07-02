@@ -235,6 +235,7 @@ class TicketSerializer(serializers.ModelSerializer):
             attrs["flight"].airplane.capacity,
             serializers.ValidationError
         )
+        return attrs
 
 
 class TicketListSerializer(TicketSerializer):
