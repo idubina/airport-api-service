@@ -47,6 +47,7 @@ class AirportSerializer(serializers.ModelSerializer):
             "closest_big_city",
             "image"
         )
+        read_only_fields = ("id", "image")
 
 
 class AirportListSerializer(AirportSerializer):
@@ -121,6 +122,7 @@ class AirplaneSerializer(serializers.ModelSerializer):
             "airplane_type",
             "image"
         )
+        read_only_fields = ("id", "image")
 
 
 class AirplaneListSerializer(AirplaneSerializer):
