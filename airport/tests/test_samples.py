@@ -1,4 +1,5 @@
-from tkinter.font import names
+from datetime import datetime
+from django.utils import timezone
 
 from airport.models import (
     Country,
@@ -7,7 +8,8 @@ from airport.models import (
     Route,
     Crew,
     AirplaneType,
-    Airplane
+    Airplane,
+    Flight
 )
 
 
@@ -180,3 +182,62 @@ def base_sample_airplane(**params):
 
     defaults.update(params)
     return Airplane.objects.create(**defaults)
+
+def sample_flight_1():
+    flight =  Flight.objects.create(
+        route=sample_route_1(),
+        airplane=sample_airplane_1(),
+        departure_time=timezone.make_aware(
+            datetime(2026, 7, 1, 10, 0)
+        ),
+        arrival_time=timezone.make_aware(
+            datetime(2026, 7, 1, 12, 30)
+        ),
+        base_price=170,
+    )
+
+    crew_1 = sample_crew(
+        first_name="TestFirstName1",
+        last_name="TestLastName1",
+    )
+
+    flight.crew.add(crew_1)
+
+    crew_2 = sample_crew(
+        first_name="TestFirstName2",
+        last_name="TestLastName2",
+    )
+
+    flight.crew.add(crew_2)
+
+    return flight
+
+
+def sample_flight_2():
+    flight = Flight.objects.create(
+        route=sample_route_2(),
+        airplane=sample_airplane_2(),
+        departure_time=timezone.make_aware(
+            datetime(2026, 7, 12, 10, 0)
+        ),
+        arrival_time=timezone.make_aware(
+            datetime(2026, 7, 12, 12, 30)
+        ),
+        base_price=170,
+    )
+
+    crew_1 = sample_crew(
+        first_name="TestFirstName3",
+        last_name="TestLastName3",
+    )
+
+    flight.crew.add(crew_1)
+
+    crew_2 = sample_crew(
+        first_name="TestFirstName4",
+        last_name="TestLastName4",
+    )
+
+    flight.crew.add(crew_2)
+
+    return flight
