@@ -6,6 +6,7 @@ from airport.models import (
     Airport,
     Route,
     Crew,
+    AirplaneType,
 )
 
 
@@ -133,3 +134,11 @@ def sample_crew(**params):
     defaults.update(params)
 
     return Crew.objects.create(**defaults)
+
+def sample_airplane_type(**params):
+
+    defaults = {"name": "TestAirplaneType"}
+
+    defaults.update(params)
+
+    return AirplaneType.objects.create(**defaults)
