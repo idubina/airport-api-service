@@ -1,4 +1,6 @@
 from datetime import datetime
+from decimal import Decimal
+
 from django.utils import timezone
 
 from airport.models import (
@@ -9,7 +11,9 @@ from airport.models import (
     Crew,
     AirplaneType,
     Airplane,
-    Flight
+    Flight,
+    Ticket,
+    TicketClass
 )
 
 
@@ -241,3 +245,11 @@ def sample_flight_2():
     flight.crew.add(crew_2)
 
     return flight
+
+def sample_ticket_class(**params):
+    defaults = {
+        "name": "TestTicketClass",
+        "price_multiplier": Decimal("1.20")
+    }
+    defaults.update(params)
+    return TicketClass.objects.create(**defaults)
