@@ -13,7 +13,7 @@ from airport.models import (
     Airplane,
     Flight,
     Ticket,
-    TicketClass
+    TicketClass,
 )
 
 
@@ -253,3 +253,53 @@ def sample_ticket_class(**params):
     }
     defaults.update(params)
     return TicketClass.objects.create(**defaults)
+
+
+class OrderTicketSamples:
+
+    def __init__(self):
+        self.flight_1 = sample_flight_1()
+        self.flight_2 = sample_flight_2()
+        self.ticket_class = sample_ticket_class()
+
+    def sample_ticket_1(self, order):
+        flight = self.flight_1
+        ticket_class = self.ticket_class
+
+        return Ticket.objects.create(
+            row=1,
+            seat=2,
+            flight=flight,
+            order=order,
+            ticket_class=ticket_class,
+            price=flight.base_price * ticket_class.price_multiplier,
+        )
+
+
+    def sample_ticket_2(self, order):
+        flight = self.flight_1
+        ticket_class = self.ticket_class
+        order = order
+
+        return Ticket.objects.create(
+            row=2,
+            seat=3,
+            flight=flight,
+            order=order,
+            ticket_class=ticket_class,
+            price=flight.base_price * ticket_class.price_multiplier,
+        )
+
+    def sample_ticket_3(self, order):
+        flight = self.flight_2
+        ticket_class = self.ticket_class
+        order = order
+
+        return Ticket.objects.create(
+            row=3,
+            seat=4,
+            flight=flight,
+            order=order,
+            ticket_class=ticket_class,
+            price=flight.base_price * ticket_class.price_multiplier,
+        )
