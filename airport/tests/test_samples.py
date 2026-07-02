@@ -7,6 +7,7 @@ from airport.models import (
     Route,
     Crew,
     AirplaneType,
+    Airplane
 )
 
 
@@ -142,3 +143,40 @@ def sample_airplane_type(**params):
     defaults.update(params)
 
     return AirplaneType.objects.create(**defaults)
+
+
+def sample_airplane_1():
+    return Airplane.objects.create(
+        name="TestAirplane1",
+        rows=70,
+        seats_in_row=6,
+        airplane_type=sample_airplane_type(
+            name="TestAirplaneType1"
+        )
+    )
+
+def sample_airplane_2():
+    return Airplane.objects.create(
+        name="TestAirplane2",
+        rows=70,
+        seats_in_row=6,
+        airplane_type=sample_airplane_type(
+            name="TestAirplaneType2"
+        )
+    )
+
+def base_sample_airplane(**params):
+    airplane_type = params.pop("airplane_type", None)
+
+    if airplane_type is None:
+        airplane_type = sample_airplane_type()
+
+    defaults = {
+        "name": "TestAirplane",
+        "rows": 70,
+        "seats_in_row": 6,
+        "airplane_type": airplane_type
+    }
+
+    defaults.update(params)
+    return Airplane.objects.create(**defaults)
