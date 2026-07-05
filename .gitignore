@@ -7,3 +7,4 @@ media/*
 !media/.gitkeep
 airport_sample_data.json
 .env
+.DS_Store

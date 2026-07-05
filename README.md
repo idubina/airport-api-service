@@ -33,6 +33,17 @@ pip install -r requirements.txt
 
 Create a `.env` file based on `.env.sample`.
 
+Required environment variables:
+
+- `SECRET_KEY` - Django secret key
+- `DEBUG` - set `True` for local development and Docker review
+- `POSTGRES_PASSWORD` - PostgreSQL password
+- `POSTGRES_USER` - PostgreSQL user
+- `POSTGRES_DB` - PostgreSQL database name
+- `POSTGRES_HOST` - use `localhost` for local Django and `db` for Docker
+- `POSTGRES_PORT` - PostgreSQL port
+- `PGDATA` - PostgreSQL data directory inside Docker
+
 ## Run locally
 
 For local development, PostgreSQL should be available on your machine.
