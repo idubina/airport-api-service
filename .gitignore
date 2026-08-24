@@ -1,2 +1,10 @@
 .idea
 venv
+**__pycache__
+.flake8
+db.sqlite3
+media/*
+!media/.gitkeep
+airport_sample_data.json
+.env
+.DS_Store

@@ -1,0 +1,20 @@
+Admin:
+email: admin@airport.com
+password: admin123
+
+Staff:
+email: staff@airport.com
+password: staff123
+
+Regular users:
+email: john.passenger@example.com
+password: passenger123
+
+email: anna.passenger@example.com
+password: passenger123
+
+email: max.passenger@example.com
+password: passenger123
+
+email: sofia.passenger@example.com
+password: passenger123
